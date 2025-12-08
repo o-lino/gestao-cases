@@ -1,0 +1,82 @@
+# .gitignore additions for case management system
+
+# Environment files with secrets
+.env
+.env.db
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite
+postgres_data/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+*.log
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+
+# Node
+node_modules/
+.npm
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+*.local
+
+# Alembic
+alembic/versions/*.pyc
+
+# Debug files (prevent accidental commits)
+**/debug_*.py
+**/check_*.py
+**/*_logs.txt
+**/output.txt
+**/curl_output.txt
+**/error.log
+*.backup
+*_ORIGINAL.*
