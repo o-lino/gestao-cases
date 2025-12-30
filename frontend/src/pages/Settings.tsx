@@ -1,46 +1,12 @@
-import { useState } from 'react'
-import { User, Palette, Bell, Settings as SettingsIcon, Sun, Moon, Monitor, ChevronRight, Trash2, Info, Save, Sidebar } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { User, Palette, Bell, Settings as SettingsIcon, Sun, Moon, Monitor, Trash2, Info, Save } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
 import { useSidebar } from '@/context/SidebarContext'
 import { useToast } from '@/components/common/Toast'
+import { PageLayout, PageTab } from '@/components/common/PageLayout'
 
-// Reusable Section Component
-function SettingsSection({ 
-  title, 
-  icon: Icon, 
-  children,
-  defaultOpen = true 
-}: { 
-  title: string
-  icon: React.ElementType
-  children: React.ReactNode
-  defaultOpen?: boolean
-}) {
-  const [isOpen, setIsOpen] = useState(defaultOpen)
-
-  return (
-    <div className="bg-card border rounded-lg overflow-hidden">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-4 hover:bg-accent/50 transition-colors"
-      >
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <Icon className="h-5 w-5 text-primary" />
-          </div>
-          <h3 className="font-semibold text-foreground">{title}</h3>
-        </div>
-        <ChevronRight className={`h-5 w-5 text-muted-foreground transition-transform ${isOpen ? 'rotate-90' : ''}`} />
-      </button>
-      {isOpen && (
-        <div className="px-4 pb-4 border-t">
-          {children}
-        </div>
-      )}
-    </div>
-  )
-}
+type TabType = 'profile' | 'appearance' | 'notifications' | 'system'
 
 // Toggle Switch Component
 function Toggle({ 
@@ -66,7 +32,7 @@ function Toggle({
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-          checked ? 'bg-primary' : 'bg-muted'
+          checked ? 'bg-orange-500' : 'bg-gray-200'
         }`}
       >
         <span
@@ -86,9 +52,15 @@ function ProfileSection() {
   const [name, setName] = useState(user?.name || '')
   const [isSaving, setIsSaving] = useState(false)
 
+  // Sync name with user when user data loads/changes
+  useEffect(() => {
+    if (user?.name) {
+      setName(user.name)
+    }
+  }, [user])
+
   const handleSave = async () => {
     setIsSaving(true)
-    // Simulating API call
     await new Promise(resolve => setTimeout(resolve, 500))
     setIsSaving(false)
     toast.success('Perfil atualizado com sucesso!')
@@ -97,9 +69,9 @@ function ProfileSection() {
   const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
   return (
-    <div className="pt-4 space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-primary-foreground text-xl font-bold">
+        <div className="h-16 w-16 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white text-xl font-bold border-4 border-orange-50">
           {initials || 'U'}
         </div>
         <div className="flex-1">
@@ -108,14 +80,14 @@ function ProfileSection() {
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Nome</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-primary"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-foreground focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
           />
         </div>
 
@@ -125,14 +97,14 @@ function ProfileSection() {
             type="email"
             value={user?.email || ''}
             disabled
-            className="w-full px-3 py-2 border rounded-lg bg-muted text-muted-foreground cursor-not-allowed"
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
           />
           <p className="text-xs text-muted-foreground mt-1">O email não pode ser alterado</p>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Função</label>
-          <div className="px-3 py-2 border rounded-lg bg-muted text-muted-foreground">
+          <div className="px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500">
             {user?.role === 'ADMIN' ? 'Administrador' : 'Usuário'}
           </div>
         </div>
@@ -141,7 +113,7 @@ function ProfileSection() {
       <button
         onClick={handleSave}
         disabled={isSaving}
-        className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+        className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 shadow-sm"
       >
         <Save className="h-4 w-4" />
         {isSaving ? 'Salvando...' : 'Salvar Alterações'}
@@ -177,22 +149,22 @@ function AppearanceSection() {
   }
 
   return (
-    <div className="pt-4 space-y-4">
+    <div className="space-y-6">
       <div>
         <p className="font-medium text-foreground mb-3">Tema</p>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-3">
           {themes.map(({ value, label, icon: Icon }) => (
             <button
               key={value}
               onClick={() => handleThemeChange(value)}
-              className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+              className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
                 theme === value 
-                  ? 'border-primary bg-primary/10' 
-                  : 'border-transparent bg-muted hover:bg-accent'
+                  ? 'border-orange-500 bg-orange-50' 
+                  : 'border-transparent bg-gray-50 hover:bg-gray-100'
               }`}
             >
-              <Icon className={`h-5 w-5 ${theme === value ? 'text-primary' : 'text-muted-foreground'}`} />
-              <span className={`text-sm ${theme === value ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+              <Icon className={`h-6 w-6 ${theme === value ? 'text-orange-600' : 'text-gray-500'}`} />
+              <span className={`text-sm ${theme === value ? 'text-orange-700 font-medium' : 'text-gray-500'}`}>
                 {label}
               </span>
             </button>
@@ -200,7 +172,7 @@ function AppearanceSection() {
         </div>
       </div>
 
-      <div className="border-t pt-4">
+      <div className="border-t border-gray-100 pt-4">
         <Toggle
           checked={isExpanded}
           onChange={handleSidebarToggle}
@@ -225,7 +197,7 @@ function NotificationsSection() {
   }
 
   return (
-    <div className="pt-4 divide-y">
+    <div className="divide-y divide-gray-100">
       <Toggle
         checked={emailNotifications}
         onChange={(v) => handleChange(setEmailNotifications, v, 'Notificações por email')}
@@ -244,7 +216,7 @@ function NotificationsSection() {
         label="Alertas de Cases"
         description="Ser notificado quando um case mudar de status"
       />
-      <div className="pt-3">
+      <div className="pt-4">
         <p className="text-sm text-muted-foreground italic">
           * As notificações serão implementadas em breve
         </p>
@@ -261,14 +233,12 @@ function SystemSection() {
   const handleClearCache = async () => {
     setIsClearing(true)
     
-    // Clear localStorage except essential items
     const token = localStorage.getItem('token')
     const theme = localStorage.getItem('theme')
     const sidebarPref = localStorage.getItem('sidebar-expanded')
     
     localStorage.clear()
     
-    // Restore essential items
     if (token) localStorage.setItem('token', token)
     if (theme) localStorage.setItem('theme', theme)
     if (sidebarPref) localStorage.setItem('sidebar-expanded', sidebarPref)
@@ -279,18 +249,18 @@ function SystemSection() {
   }
 
   return (
-    <div className="pt-4 space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between py-2">
         <div>
           <p className="font-medium text-foreground">Versão do Sistema</p>
           <p className="text-sm text-muted-foreground">Gestão Cases</p>
         </div>
-        <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+        <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
           v2.0.0
         </span>
       </div>
 
-      <div className="border-t pt-4">
+      <div className="border-t border-gray-100 pt-4">
         <div className="flex items-center justify-between">
           <div>
             <p className="font-medium text-foreground">Limpar Cache</p>
@@ -299,7 +269,7 @@ function SystemSection() {
           <button
             onClick={handleClearCache}
             disabled={isClearing}
-            className="flex items-center gap-2 px-3 py-2 text-destructive border border-destructive/30 rounded-lg hover:bg-destructive/10 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-3 py-2 text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
           >
             <Trash2 className="h-4 w-4" />
             {isClearing ? 'Limpando...' : 'Limpar'}
@@ -307,9 +277,9 @@ function SystemSection() {
         </div>
       </div>
 
-      <div className="border-t pt-4">
-        <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-          <Info className="h-5 w-5 text-muted-foreground" />
+      <div className="border-t border-gray-100 pt-4">
+        <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+          <Info className="h-5 w-5 text-gray-400" />
           <div className="text-sm text-muted-foreground">
             <p>Ambiente: <span className="font-medium text-foreground">Desenvolvimento</span></p>
             <p>Backend: <span className="font-medium text-foreground">FastAPI</span></p>
@@ -321,32 +291,34 @@ function SystemSection() {
   )
 }
 
+// Tab Configuration
+const TABS: PageTab[] = [
+  { id: 'profile', label: 'Perfil', icon: User },
+  { id: 'appearance', label: 'Aparência', icon: Palette },
+  { id: 'notifications', label: 'Notificações', icon: Bell },
+  { id: 'system', label: 'Sistema', icon: SettingsIcon },
+]
+
 // Main Settings Page
 export function Settings() {
+  const [activeTab, setActiveTab] = useState<TabType>('profile')
+
   return (
-    <div className="p-4 md:p-6 max-w-3xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Configurações</h1>
-        <p className="text-muted-foreground mt-1">Gerencie suas preferências e configurações do sistema</p>
+    <PageLayout
+      title="Configurações"
+      subtitle="Gerencie suas preferências e configurações do sistema"
+      icon={SettingsIcon}
+      tabs={TABS}
+      activeTab={activeTab}
+      onTabChange={(id) => setActiveTab(id as TabType)}
+    >
+      {/* Tab Content */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        {activeTab === 'profile' && <ProfileSection />}
+        {activeTab === 'appearance' && <AppearanceSection />}
+        {activeTab === 'notifications' && <NotificationsSection />}
+        {activeTab === 'system' && <SystemSection />}
       </div>
-
-      <div className="space-y-4">
-        <SettingsSection title="Perfil do Usuário" icon={User}>
-          <ProfileSection />
-        </SettingsSection>
-
-        <SettingsSection title="Aparência" icon={Palette}>
-          <AppearanceSection />
-        </SettingsSection>
-
-        <SettingsSection title="Notificações" icon={Bell} defaultOpen={false}>
-          <NotificationsSection />
-        </SettingsSection>
-
-        <SettingsSection title="Sistema" icon={SettingsIcon} defaultOpen={false}>
-          <SystemSection />
-        </SettingsSection>
-      </div>
-    </div>
+    </PageLayout>
   )
 }

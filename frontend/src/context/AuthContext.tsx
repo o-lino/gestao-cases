@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react'
 // User role constants
 export const UserRole = {
   USER: 'USER',
+  CURATOR: 'CURATOR',
   MODERATOR: 'MODERATOR',
   ADMIN: 'ADMIN',
 } as const
@@ -26,9 +27,12 @@ interface AuthContextType {
   // Role helpers
   isAdmin: () => boolean
   isModerator: () => boolean
+  isCurator: () => boolean
   isModeratorOrAbove: () => boolean
+  isCuratorOrAbove: () => boolean
   canApprove: () => boolean
   canManageUsers: () => boolean
+  canCurate: () => boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -72,9 +76,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Role helper functions
   const isAdmin = () => user?.role === UserRole.ADMIN
   const isModerator = () => user?.role === UserRole.MODERATOR
+  const isCurator = () => user?.role === UserRole.CURATOR
   const isModeratorOrAbove = () => user?.role === UserRole.MODERATOR || user?.role === UserRole.ADMIN
+  const isCuratorOrAbove = () => 
+    user?.role === UserRole.CURATOR || 
+    user?.role === UserRole.MODERATOR || 
+    user?.role === UserRole.ADMIN
   const canApprove = () => isModeratorOrAbove()
   const canManageUsers = () => isAdmin()
+  const canCurate = () => isCuratorOrAbove()
 
   return (
     <AuthContext.Provider value={{ 
@@ -85,9 +95,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logout,
       isAdmin,
       isModerator,
+      isCurator,
       isModeratorOrAbove,
+      isCuratorOrAbove,
       canApprove,
       canManageUsers,
+      canCurate,
     }}>
       {children}
     </AuthContext.Provider>
@@ -101,3 +114,4 @@ export function useAuth() {
   }
   return context
 }
+

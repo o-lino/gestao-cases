@@ -39,9 +39,10 @@ class AIService:
 
     async def _call_iara_risk(self, data: Dict[str, Any]) -> Dict[str, Any]:
         # Mock implementation
-        budget = float(data.get('budget') or 0)
-        risk_level = "HIGH" if budget > 100000 else "LOW"
-        return {"risk_level": risk_level, "score": 85 if risk_level == "HIGH" else 20, "reasoning": "Budget analysis"}
+        # Risk analysis based on case complexity
+        variables_count = len(data.get('variables', []))
+        risk_level = "HIGH" if variables_count > 10 else "LOW"
+        return {"risk_level": risk_level, "score": 85 if risk_level == "HIGH" else 20, "reasoning": "Case complexity analysis"}
 
     async def _call_bedrock_risk(self, data: Dict[str, Any]) -> Dict[str, Any]:
         # Mock implementation

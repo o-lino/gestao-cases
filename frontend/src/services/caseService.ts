@@ -12,6 +12,11 @@ export interface CaseVariable {
   priority?: string
   desired_lag?: string
   options?: string
+  // Cancellation fields
+  search_status?: string
+  is_cancelled?: boolean
+  cancelled_at?: string
+  cancellation_reason?: string
 }
 
 export interface Case {
@@ -27,7 +32,7 @@ export interface Case {
   impacted_journey?: string
   impacted_segment?: string
   impacted_customers?: string
-  status: 'DRAFT' | 'SUBMITTED' | 'REVIEW' | 'APPROVED' | 'REJECTED' | 'CLOSED'
+  status: 'DRAFT' | 'SUBMITTED' | 'REVIEW' | 'APPROVED' | 'REJECTED' | 'CLOSED' | 'CANCELLED'
   created_by: number
   assigned_to_id?: number
   estimated_use_date?: string
@@ -137,5 +142,31 @@ export const caseService = {
   deleteBulk: async (ids: number[]) => {
     // Delete cases one by one (could be a bulk endpoint in the future)
     await Promise.all(ids.map(id => api.delete(`/cases/${id}`)))
+  },
+
+  // Variable management
+  addVariable: async (caseId: number, variable: Omit<CaseVariable, 'id' | 'is_cancelled' | 'cancelled_at' | 'cancellation_reason' | 'search_status'>) => {
+    const response = await api.post<CaseVariable>(`/cases/${caseId}/variables`, variable)
+    return response.data
+  },
+
+  cancelVariable: async (caseId: number, variableId: number, reason?: string) => {
+    const response = await api.patch<CaseVariable>(`/cases/${caseId}/variables/${variableId}/cancel`, { reason })
+    return response.data
+  },
+
+  deleteVariable: async (caseId: number, variableId: number) => {
+    await api.delete(`/cases/${caseId}/variables/${variableId}`)
+  },
+
+  deleteVariablesBulk: async (caseId: number, variableIds: number[]) => {
+    await Promise.all(variableIds.map(id => api.delete(`/cases/${caseId}/variables/${id}`)))
+  },
+
+  // Case cancellation
+  cancel: async (id: number, reason?: string) => {
+    const response = await api.post<Case>(`/cases/${id}/cancel`, { reason })
+    return response.data
   }
 }
+

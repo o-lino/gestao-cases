@@ -20,7 +20,6 @@ export function exportCasesToExcel(cases: Case[], filename: string = 'cases') {
     'Clientes Impactados',
     'Data Início',
     'Data Fim',
-    'Orçamento',
     'Criado Em',
     'Atualizado Em',
     'Qtd Variáveis',
@@ -41,7 +40,6 @@ export function exportCasesToExcel(cases: Case[], filename: string = 'cases') {
     c.impacted_customers || '',
     c.start_date || '',
     c.end_date || '',
-    c.budget || '',
     formatDate(c.created_at),
     formatDate(c.updated_at),
     c.variables?.length || 0,
@@ -78,7 +76,6 @@ export async function exportCasesToXLSX(cases: Case[], filename: string = 'cases
       'Clientes Impactados': c.impacted_customers || '',
       'Data Início': c.start_date || '',
       'Data Fim': c.end_date || '',
-      'Orçamento': c.budget || '',
       'Criado Em': formatDate(c.created_at),
       'Atualizado Em': formatDate(c.updated_at),
     }))
@@ -100,22 +97,17 @@ export async function exportCasesToXLSX(cases: Case[], filename: string = 'cases
     // Summary sheet
     const statusCounts: Record<string, number> = {}
     const clientCounts: Record<string, number> = {}
-    let totalBudget = 0
     
     cases.forEach(c => {
       statusCounts[c.status] = (statusCounts[c.status] || 0) + 1
       if (c.client_name) {
         clientCounts[c.client_name] = (clientCounts[c.client_name] || 0) + 1
       }
-      if (c.budget) {
-        totalBudget += c.budget
-      }
     })
     
     const summaryData = [
       { 'Métrica': 'Total de Cases', 'Valor': cases.length },
       { 'Métrica': 'Total de Variáveis', 'Valor': variablesData.length },
-      { 'Métrica': 'Orçamento Total', 'Valor': formatCurrency(totalBudget) },
       { 'Métrica': '', 'Valor': '' },
       { 'Métrica': '--- Por Status ---', 'Valor': '' },
       ...Object.entries(statusCounts).map(([status, count]) => ({
@@ -196,12 +188,7 @@ function formatDateForFilename(date: Date): string {
   return date.toISOString().split('T')[0]
 }
 
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(value)
-}
+
 
 // Import from Excel/CSV
 export async function importCasesFromExcel(file: File): Promise<Partial<Case>[]> {
@@ -221,7 +208,6 @@ export async function importCasesFromExcel(file: File): Promise<Partial<Case>[]>
       context: row['Contexto'] || row['contexto'] || row['context'],
       impact: row['Impacto'] || row['impacto'] || row['impact'],
       necessity: row['Necessidade'] || row['necessidade'] || row['necessity'],
-      budget: parseFloat(row['Orçamento'] || row['orcamento'] || row['budget']) || undefined,
     }))
   } catch (error) {
     console.error('Import failed:', error)

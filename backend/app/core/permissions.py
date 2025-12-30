@@ -7,6 +7,7 @@ from enum import Enum
 class UserRole(str, Enum):
     """User role levels with increasing permissions."""
     USER = "USER"           # Usuário comum - create own cases
+    CURATOR = "CURATOR"     # Curador - corrigir sugestões de tabelas
     MODERATOR = "MODERATOR" # Moderador - approve/reject cases
     ADMIN = "ADMIN"         # Administrador - full access
 
@@ -15,8 +16,9 @@ class UserRole(str, Enum):
         """Get permission level for a role (higher = more permissions)."""
         levels = {
             cls.USER: 1,
-            cls.MODERATOR: 2,
-            cls.ADMIN: 3,
+            cls.CURATOR: 2,
+            cls.MODERATOR: 3,
+            cls.ADMIN: 4,
         }
         return levels.get(role, 0)
 
@@ -29,6 +31,7 @@ class UserRole(str, Enum):
 # Role descriptions for UI
 ROLE_DESCRIPTIONS = {
     UserRole.USER: "Usuário comum - pode criar e gerenciar próprios cases",
+    UserRole.CURATOR: "Curador - pode corrigir sugestões de tabelas do matching",
     UserRole.MODERATOR: "Moderador - pode aprovar/rejeitar cases de outros",
     UserRole.ADMIN: "Administrador - acesso total ao sistema",
 }

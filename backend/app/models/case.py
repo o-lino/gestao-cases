@@ -60,6 +60,12 @@ class CaseVariable(Base):
     search_started_at = Column(DateTime(timezone=True), nullable=True)
     search_completed_at = Column(DateTime(timezone=True), nullable=True)
     selected_match_id = Column(Integer, ForeignKey("variable_matches.id", ondelete="SET NULL", use_alter=True), nullable=True)
+    
+    # Cancellation tracking
+    is_cancelled = Column(Boolean, default=False, index=True)
+    cancelled_at = Column(DateTime(timezone=True), nullable=True)
+    cancelled_by = Column(Integer, ForeignKey("collaborators.id"), nullable=True)
+    cancellation_reason = Column(Text, nullable=True)
 
     case = relationship("Case", back_populates="variables")
     matches = relationship("VariableMatch", foreign_keys="VariableMatch.case_variable_id", backref="case_variable", lazy="dynamic")

@@ -40,7 +40,6 @@ export function CloneCaseButton({ caseData, variant = 'button' }: CloneCaseButto
         impacted_customers: caseData.impacted_customers,
         start_date: caseData.start_date,
         end_date: caseData.end_date,
-        budget: caseData.budget,
         variables: cloneOptions.includeVariables ? caseData.variables : [],
       }
 

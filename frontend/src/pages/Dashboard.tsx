@@ -217,8 +217,8 @@ export function Dashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-2 lg:grid-cols-5">
+        <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-blue-50 rounded-xl">
               <Briefcase className="h-6 w-6 text-blue-600" />
@@ -229,7 +229,7 @@ export function Dashboard() {
           <p className="text-sm text-gray-500 mt-1">cases no período</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-green-50 rounded-xl">
               <Activity className="h-6 w-6 text-green-600" />
@@ -240,7 +240,7 @@ export function Dashboard() {
           <p className="text-sm text-gray-500 mt-1">em andamento</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-purple-50 rounded-xl">
               <Users className="h-6 w-6 text-purple-600" />
@@ -251,7 +251,7 @@ export function Dashboard() {
           <p className="text-sm text-gray-500 mt-1">criados por você</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-orange-50 rounded-xl">
               <Clock className="h-6 w-6 text-orange-600" />
@@ -262,7 +262,7 @@ export function Dashboard() {
           <p className="text-sm text-gray-500 mt-1">últimos 7 dias</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-emerald-50 rounded-xl">
               <TrendingUp className="h-6 w-6 text-emerald-600" />
@@ -276,7 +276,7 @@ export function Dashboard() {
 
       {/* Charts Grid */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="font-semibold text-gray-800">Evolução de Cases</h3>

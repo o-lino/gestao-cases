@@ -21,18 +21,28 @@ class MatchStatus(str, Enum):
     SUGGESTED = "SUGGESTED"      # System suggested this match
     SELECTED = "SELECTED"        # Selected as the match for variable
     PENDING_OWNER = "PENDING_OWNER"  # Waiting for owner validation
-    APPROVED = "APPROVED"        # Owner approved
+    PENDING_REQUESTER = "PENDING_REQUESTER"  # Owner approved, waiting for requester confirmation
+    APPROVED = "APPROVED"        # Fully approved (owner + requester)
     REJECTED = "REJECTED"        # Owner rejected
+    REJECTED_BY_REQUESTER = "REJECTED_BY_REQUESTER"  # Requester rejected, back to owner
+    REDIRECTED = "REDIRECTED"    # Redirected to another owner/area
+    PENDING_VALIDATION = "PENDING_VALIDATION"  # Owner response under validation
 
 
 class VariableSearchStatus(str, Enum):
     """Status of variable search process"""
     PENDING = "PENDING"          # Not searched yet
+    AI_SEARCHING = "AI_SEARCHING"  # Being processed by AI agent (future integration)
     SEARCHING = "SEARCHING"      # Currently searching
     MATCHED = "MATCHED"          # Found matches
     NO_MATCH = "NO_MATCH"        # No matches found
     OWNER_REVIEW = "OWNER_REVIEW"  # Waiting for owner
-    APPROVED = "APPROVED"        # Final approval received
+    REQUESTER_REVIEW = "REQUESTER_REVIEW"  # Owner approved, waiting for requester
+    APPROVED = "APPROVED"        # Final approval received (requester confirmed)
+    IN_USE = "IN_USE"            # Requester confirmed data is being used
+    CANCELLED = "CANCELLED"      # Variable was cancelled
+    PENDING_INVOLVEMENT = "PENDING_INVOLVEMENT"  # Waiting for data creation via involvement
+
 
 
 class DataTable(Base):

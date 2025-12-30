@@ -29,7 +29,6 @@ TEMPLATES = {
             <h2>Case enviado para revisão</h2>
             <p>O case <strong>{title}</strong> foi enviado para revisão e aguarda aprovação.</p>
             <p><strong>Cliente:</strong> {client_name}</p>
-            <p><strong>Budget:</strong> {budget}</p>
             <p><a href="{app_url}/cases/{case_id}">Revisar Case</a></p>
         """,
     },

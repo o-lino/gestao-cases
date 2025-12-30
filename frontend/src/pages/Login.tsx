@@ -29,7 +29,18 @@ export function Login() {
       const response = await authService.login(email, password)
       login(response.access_token)
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Email ou senha inválidos')
+      // authService uses fetch, so err.message contains the actual error
+      // err.response?.data?.detail would be for axios
+      console.error('Login error:', err)
+      const errorMessage = err.message || 'Erro ao fazer login'
+      // Extract the detail from the error message if present
+      if (errorMessage.includes('Incorrect email or password')) {
+        setError('Email ou senha inválidos')
+      } else if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
+        setError('Erro de conexão. Verifique sua rede.')
+      } else {
+        setError(errorMessage)
+      }
     } finally {
       setIsLoading(false)
     }
@@ -192,7 +203,7 @@ export function Login() {
 
           {/* Footer */}
           <p className="mt-6 text-center text-sm text-gray-500">
-            © 2024 Gestão Cases. Todos os direitos reservados.
+            © 2026 Gestão Cases. Todos os direitos reservados.
           </p>
         </div>
       </div>

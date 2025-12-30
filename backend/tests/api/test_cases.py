@@ -22,7 +22,6 @@ async def test_create_case(admin_client: AsyncClient):
         json={
             "title": "Test Case",
             "description": "A test case description",
-            "budget": 5000.0,
             "variables": [
                 {"variable_name": "Var1", "variable_type": "TEXT", "variable_value": "Val1", "is_required": True}
             ]

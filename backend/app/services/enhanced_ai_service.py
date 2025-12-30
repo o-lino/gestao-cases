@@ -48,15 +48,17 @@ class MockAIProvider(AIProvider):
         return {cat: score/total for cat, score in scores.items()}
     
     async def analyze_risk(self, case_data: Dict[str, Any]) -> Dict[str, Any]:
-        budget = float(case_data.get("budget") or 0)
+        # Analyze risk based on case complexity (number of variables, context length, etc.)
+        context_length = len(case_data.get("context") or "")
+        impact_length = len(case_data.get("impact") or "")
         
-        if budget > 500000:
+        if context_length > 1000 or impact_length > 500:
             risk_level = "CRITICAL"
             score = 95
-        elif budget > 100000:
+        elif context_length > 500 or impact_length > 250:
             risk_level = "HIGH"
             score = 75
-        elif budget > 50000:
+        elif context_length > 200 or impact_length > 100:
             risk_level = "MEDIUM"
             score = 50
         else:
@@ -67,12 +69,12 @@ class MockAIProvider(AIProvider):
             "risk_level": risk_level,
             "score": score,
             "factors": [
-                {"name": "Budget", "impact": "high" if budget > 100000 else "low"},
-                {"name": "Complexity", "impact": "medium"},
+                {"name": "Complexity", "impact": "high" if context_length > 500 else "low"},
+                {"name": "Impact Scope", "impact": "medium"},
                 {"name": "Timeline", "impact": "low"},
             ],
             "recommendations": [
-                "Revisar escopo do projeto" if budget > 100000 else "Manter acompanhamento regular",
+                "Revisar escopo do projeto" if context_length > 500 else "Manter acompanhamento regular",
                 "Definir marcos de entrega claros",
             ]
         }

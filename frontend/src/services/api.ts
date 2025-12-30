@@ -1,8 +1,18 @@
 
 import axios, { InternalAxiosRequestConfig, AxiosError } from 'axios'
 
+// Base URL for API - uses environment variable or defaults to current host
+const getApiBaseUrl = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return `${import.meta.env.VITE_API_URL}/api/v1`
+  }
+  // For network access: use current hostname with backend port
+  // This allows access from other machines on the same network
+  return `http://${window.location.hostname}:8000/api/v1`
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api/v1` : 'http://localhost:8000/api/v1',
+  baseURL: getApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },

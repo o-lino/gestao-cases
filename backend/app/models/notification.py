@@ -32,6 +32,10 @@ class NotificationType(str, Enum):
     OWNER_VALIDATION_REQUEST = "OWNER_VALIDATION_REQUEST"  # Table owner needs to validate match
     VARIABLE_APPROVED = "VARIABLE_APPROVED"                # Variable was approved by owner
     
+    # Variable management notifications
+    VARIABLE_ADDED = "VARIABLE_ADDED"                      # Variable added to case
+    VARIABLE_CANCELLED = "VARIABLE_CANCELLED"              # Variable cancelled in case
+    
     # Moderation notifications
     MODERATION_REQUEST = "MODERATION_REQUEST"           # Moderator requested to moderate user
     MODERATION_APPROVED = "MODERATION_APPROVED"         # User approved moderation request
@@ -41,6 +45,19 @@ class NotificationType(str, Enum):
     MODERATION_EXPIRING = "MODERATION_EXPIRING"         # 15 days before expiration warning
     MODERATION_EXPIRED = "MODERATION_EXPIRED"           # Association expired
     MODERATION_REVOKED = "MODERATION_REVOKED"           # Association manually revoked
+    
+    # Agent decision notifications
+    AGENT_DECISION_CONSENSUS = "AGENT_DECISION_CONSENSUS"  # Agent decision needs consensus vote
+    AGENT_DECISION_APPROVED = "AGENT_DECISION_APPROVED"    # Agent decision was approved by consensus
+    AGENT_DECISION_REJECTED = "AGENT_DECISION_REJECTED"    # Agent decision was rejected by consensus
+    MATCH_REQUEST = "MATCH_REQUEST"                        # Generic match request (reused for agent)
+    
+    # Involvement notifications
+    INVOLVEMENT_CREATED = "INVOLVEMENT_CREATED"              # New involvement created
+    INVOLVEMENT_DATE_SET = "INVOLVEMENT_DATE_SET"            # Owner set expected date
+    INVOLVEMENT_DUE_REMINDER = "INVOLVEMENT_DUE_REMINDER"    # Reminder before due date
+    INVOLVEMENT_OVERDUE = "INVOLVEMENT_OVERDUE"              # Past due - collection notice
+    INVOLVEMENT_COMPLETED = "INVOLVEMENT_COMPLETED"          # Completed successfully
 
 
 class NotificationPriority(str, Enum):

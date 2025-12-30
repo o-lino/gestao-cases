@@ -24,9 +24,12 @@ app.add_exception_handler(IntegrityError, integrity_error_handler)
 app.add_exception_handler(RequestValidationError, validation_error_handler)
 
 # Set all CORS enabled origins
+# Using allow_origin_regex instead of allow_origins=["*"] because
+# allow_origins=["*"] is incompatible with allow_credentials=True
+# This allows requests from any origin while still supporting credentials
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: Configure properly in production
+    allow_origin_regex=r".*",  # Allow all origins (compatible with credentials)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

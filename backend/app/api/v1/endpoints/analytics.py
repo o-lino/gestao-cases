@@ -49,13 +49,7 @@ async def get_dashboard_stats(
         if status not in ['CLOSED', 'REJECTED']
     )
     
-    # Average budget
-    budget_result = await db.execute(
-        select(func.avg(Case.budget)).where(
-            and_(Case.created_at >= cutoff_date, Case.budget.isnot(None))
-        )
-    )
-    avg_budget = float(budget_result.scalar() or 0)
+
     
     # Approval rate
     closed_statuses = ['APPROVED', 'REJECTED', 'CLOSED']
@@ -75,7 +69,6 @@ async def get_dashboard_stats(
         "total_cases": total_count,
         "active_cases": active_count,
         "recent_activity": recent_count,
-        "avg_budget": round(avg_budget, 2),
         "approval_rate": round(approval_rate, 1),
         "status_distribution": status_counts,
     }
@@ -139,8 +132,7 @@ async def get_top_clients(
     
     query = select(
         Case.client_name,
-        func.count(Case.id).label('case_count'),
-        func.sum(Case.budget).label('total_budget')
+        func.count(Case.id).label('case_count')
     ).where(
         and_(
             Case.created_at >= cutoff_date,
@@ -159,7 +151,6 @@ async def get_top_clients(
         {
             "name": row.client_name,
             "case_count": row.case_count,
-            "total_budget": float(row.total_budget or 0),
         }
         for row in rows
     ]

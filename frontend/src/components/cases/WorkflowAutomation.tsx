@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils'
 
 type TriggerType = 
   | 'status_change'
-  | 'budget_threshold'
   | 'deadline_approaching'
   | 'field_value'
 
@@ -41,24 +40,6 @@ interface AutomationRule {
 const DEFAULT_RULES: AutomationRule[] = [
   {
     id: 'auto-1',
-    name: 'Aprovar automaticamente se budget < 10k',
-    enabled: false,
-    trigger: { type: 'status_change', config: { from: 'SUBMITTED', to: 'REVIEW' } },
-    conditions: [{ field: 'budget', operator: 'less_than', value: 10000 }],
-    actions: [{ type: 'change_status', config: { status: 'APPROVED' } }],
-    executionCount: 0,
-  },
-  {
-    id: 'auto-2',
-    name: 'Notificar gerência para budget alto',
-    enabled: true,
-    trigger: { type: 'budget_threshold', config: { threshold: 100000 } },
-    conditions: [],
-    actions: [{ type: 'send_notification', config: { to: 'manager@example.com', message: 'Case com alto orçamento' } }],
-    executionCount: 0,
-  },
-  {
-    id: 'auto-3',
     name: 'Alerta 3 dias antes do prazo',
     enabled: true,
     trigger: { type: 'deadline_approaching', config: { days: 3 } },
@@ -113,11 +94,6 @@ export function evaluateRules(
     switch (rule.trigger.type) {
       case 'status_change':
         if (event.type === 'status_change') {
-          triggerMatches = true
-        }
-        break
-      case 'budget_threshold':
-        if (caseData.budget && caseData.budget >= rule.trigger.config.threshold) {
           triggerMatches = true
         }
         break
@@ -263,21 +239,9 @@ export function AutomationRulesPanel() {
 
 // Quick automation suggestions based on case patterns
 export function AutomationSuggestions({ cases }: { cases: Case[] }) {
-  const suggestions = []
+  const suggestions: Array<{title: string; description: string; rule: {trigger: {type: TriggerType; config: any}; action: string}}> = []
   
   // Suggest based on patterns
-  const highBudgetCases = cases.filter(c => c.budget && c.budget > 50000).length
-  if (highBudgetCases > 3) {
-    suggestions.push({
-      title: 'Aprovar automaticamente casos de baixo orçamento',
-      description: 'Você tem muitos casos de alto orçamento. Automatize aprovação para < 10k.',
-      rule: {
-        trigger: { type: 'budget_threshold' as TriggerType, config: {} },
-        action: 'change_status',
-      },
-    })
-  }
-
   const overdueCount = cases.filter(c => 
     c.end_date && new Date(c.end_date) < new Date() && c.status !== 'CLOSED'
   ).length

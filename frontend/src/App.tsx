@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
@@ -13,6 +12,8 @@ import { PendingReviews } from './pages/PendingReviews'
 import { Dashboard } from './pages/Dashboard'
 import { ModerationPage } from './pages/ModerationPage'
 import { AdminPage } from './pages/AdminPage'
+import { UsersPage } from './pages/UsersPage'
+import { CuratorPage } from './pages/CuratorPage'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 // Protected Route Wrapper
@@ -122,7 +123,14 @@ function App() {
                 <Route path="/admin/users" element={
                   <PrivateRoute>
                     <Layout>
-                      <AdminPage />
+                      <UsersPage />
+                    </Layout>
+                  </PrivateRoute>
+                } />
+                <Route path="/curator" element={
+                  <PrivateRoute>
+                    <Layout>
+                      <CuratorPage />
                     </Layout>
                   </PrivateRoute>
                 } />

@@ -35,7 +35,6 @@ async def summarize_case(
     case_data = {
         "title": case.title,
         "description": case.description,
-        "budget": str(case.budget),
         "variables": [{"name": v.variable_name, "value": v.variable_value} for v in case.variables]
     }
     
@@ -64,7 +63,6 @@ async def assess_risk(
     case_data = {
         "title": case.title,
         "description": case.description,
-        "budget": str(case.budget),
         "variables": [{"name": v.variable_name, "value": v.variable_value} for v in case.variables]
     }
     

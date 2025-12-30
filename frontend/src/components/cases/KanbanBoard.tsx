@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Case } from '@/services/caseService'
-import { Clock, User, DollarSign, ChevronRight } from 'lucide-react'
+import { Clock, User, ChevronRight } from 'lucide-react'
 
 interface KanbanBoardProps {
   cases: Case[]
@@ -19,9 +19,6 @@ const COLUMNS = [
 ]
 
 function KanbanCard({ caseData }: { caseData: Case }) {
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(value)
-
   return (
     <Link
       to={`/cases/${caseData.id}`}
@@ -41,13 +38,6 @@ function KanbanCard({ caseData }: { caseData: Case }) {
       )}
       
       <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground">
-        {caseData.budget && (
-          <div className="flex items-center gap-1">
-            <DollarSign className="h-3 w-3" />
-            <span>{formatCurrency(caseData.budget)}</span>
-          </div>
-        )}
-        
         {caseData.created_at && (
           <div className="flex items-center gap-1">
             <Clock className="h-3 w-3" />

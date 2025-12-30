@@ -5,7 +5,7 @@ import { caseService, Case } from '@/services/caseService'
 import { useAuth } from '@/context/AuthContext'
 import { useToast } from '@/components/common/Toast'
 
-type SortField = 'title' | 'client_name' | 'status' | 'created_at' | 'budget'
+type SortField = 'title' | 'client_name' | 'status' | 'created_at'
 type SortDirection = 'asc' | 'desc'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -92,8 +92,6 @@ export function CaseList() {
       
       if (sortField === 'created_at') {
         comparison = new Date(aVal as string).getTime() - new Date(bVal as string).getTime()
-      } else if (sortField === 'budget') {
-        comparison = (aVal as number || 0) - (bVal as number || 0)
       } else {
         comparison = String(aVal).localeCompare(String(bVal))
       }
@@ -203,14 +201,14 @@ export function CaseList() {
     <div className="space-y-6 p-4 md:p-6 bg-gray-50 min-h-screen">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl text-white">
-              <FolderOpen className="h-6 w-6" />
-            </div>
-            Cases
-          </h1>
-          <p className="text-gray-500 mt-1">{processedData.length} case(s) encontrado(s)</p>
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl text-white shadow-lg shadow-orange-500/30">
+            <FolderOpen className="h-6 w-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Cases</h1>
+            <p className="text-muted-foreground">{processedData.length} case(s) encontrado(s)</p>
+          </div>
         </div>
         <Link
           to="/cases/new"
@@ -318,14 +316,6 @@ export function CaseList() {
                 </th>
                 <th 
                   className="p-4 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 transition-colors"
-                  onClick={() => handleSort('budget')}
-                >
-                  <div className="flex items-center gap-2">
-                    Budget <SortIcon field="budget" />
-                  </div>
-                </th>
-                <th 
-                  className="p-4 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 transition-colors"
                   onClick={() => handleSort('created_at')}
                 >
                   <div className="flex items-center gap-2">
@@ -368,12 +358,6 @@ export function CaseList() {
                       <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(c.status)}`}>
                         {STATUS_LABELS[c.status] || c.status}
                       </span>
-                    </td>
-                    <td className="p-4 text-gray-500">
-                      {c.budget 
-                        ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(c.budget)
-                        : '-'
-                      }
                     </td>
                     <td className="p-4 text-gray-500">
                       {new Date(c.created_at).toLocaleDateString('pt-BR')}

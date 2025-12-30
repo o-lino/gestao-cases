@@ -14,7 +14,6 @@ export interface CaseTemplate {
     context?: string
     impact?: string
     necessity?: string
-    budget?: number
   }
   variables: Array<{ name: string; value: string; type: string }>
   createdAt: Date
@@ -280,7 +279,6 @@ export function useTemplates() {
         context: caseData.context,
         impact: caseData.impact,
         necessity: caseData.necessity,
-        budget: caseData.budget,
       },
       variables: caseData.variables || [],
       createdAt: new Date(),

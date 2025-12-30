@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { 
   Check, X, MessageSquare, Database, User, AlertCircle, 
-  ChevronDown, ExternalLink, RefreshCw 
+  ChevronDown, ExternalLink, RefreshCw, MessageCircle
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -29,6 +29,7 @@ interface OwnerReviewPanelProps {
   onApprove: (comment: string) => void
   onReject: (comment: string, alternativeId?: number) => void
   onSkip?: () => void
+  onStructuredRespond?: () => void  // Opens the structured response modal
   alternatives?: MatchSuggestion[]
 }
 
@@ -38,6 +39,7 @@ export function OwnerReviewPanel({
   onApprove,
   onReject,
   onSkip,
+  onStructuredRespond,
   alternatives = [],
 }: OwnerReviewPanelProps) {
   const [comment, setComment] = useState('')
@@ -202,15 +204,25 @@ export function OwnerReviewPanel({
             className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-red-500 text-red-500 rounded-lg hover:bg-red-50 disabled:opacity-50"
           >
             <X className="h-5 w-5" />
-            Rejeitar Match
+            Rejeitar
           </button>
+          {onStructuredRespond && (
+            <button
+              onClick={onStructuredRespond}
+              disabled={isSubmitting}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 disabled:opacity-50"
+            >
+              <MessageCircle className="h-5 w-5" />
+              Responder
+            </button>
+          )}
           <button
             onClick={handleApprove}
             disabled={isSubmitting}
             className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50"
           >
             <Check className="h-5 w-5" />
-            Aprovar Match
+            Aprovar
           </button>
         </div>
       </div>

@@ -25,8 +25,9 @@ class NotificationService:
     async def create_notification(
         db: AsyncSession,
         user_id: int,
-        type: NotificationType,
-        title: str,
+        notification_type: NotificationType = None,  # Renamed for clarity
+        type: NotificationType = None,  # Keep for backwards compatibility
+        title: str = "",
         message: str = None,
         priority: NotificationPriority = NotificationPriority.MEDIUM,
         case_id: int = None,
@@ -35,12 +36,21 @@ class NotificationService:
         table_id: int = None,
         action_url: str = None,
         action_label: str = None,
-        expires_days: int = 7
+        expires_days: int = 7,
+        data: dict = None,  # Additional metadata
+        recipient_email: str = None,  # For external channels
+        recipient_name: str = None  # For external channels
     ) -> Notification:
-        """Create a new notification"""
+        """Create a new notification and deliver to enabled channels"""
+        # Handle both 'type' and 'notification_type' parameters
+        actual_type = notification_type or type
+        if not actual_type:
+            raise ValueError("notification_type is required")
+        
+        # Create the in-system notification
         notification = Notification(
             user_id=user_id,
-            type=type,
+            type=actual_type,
             priority=priority,
             title=title,
             message=message,
@@ -53,12 +63,153 @@ class NotificationService:
             expires_at=datetime.utcnow() + timedelta(days=expires_days)
         )
         
+        # Store additional data in action_url if provided (as query params)
+        if data and not action_url:
+            # For now, we'll log the data. In production, consider adding a JSON column
+            logger.debug(f"Notification extra data: {data}")
+        
         db.add(notification)
         await db.commit()
         await db.refresh(notification)
         
         logger.info(f"Created notification {notification.id} for user {user_id}")
+        
+        # Trigger multi-channel delivery asynchronously
+        try:
+            await NotificationService._deliver_to_channels(
+                db=db,
+                notification_type=actual_type,
+                user_id=user_id,
+                title=title,
+                message=message or "",
+                priority=priority,
+                action_url=action_url,
+                action_label=action_label,
+                case_id=case_id,
+                variable_id=variable_id,
+                recipient_email=recipient_email,
+                recipient_name=recipient_name
+            )
+        except Exception as e:
+            # Don't fail the main notification if channel delivery fails
+            logger.warning(f"Multi-channel delivery failed: {e}")
+        
         return notification
+    
+    @staticmethod
+    async def _deliver_to_channels(
+        db: AsyncSession,
+        notification_type: NotificationType,
+        user_id: int,
+        title: str,
+        message: str,
+        priority: NotificationPriority,
+        action_url: str = None,
+        action_label: str = None,
+        case_id: int = None,
+        variable_id: int = None,
+        recipient_email: str = None,
+        recipient_name: str = None
+    ):
+        """Deliver notification to external channels based on event configuration"""
+        from app.services.config_service import ConfigService
+        from app.services.notification_delivery_service import NotificationDeliveryService
+        from app.services.channels.base_channel import NotificationPriority as ChannelPriority
+        import json
+        
+        # Map NotificationType to config key
+        event_config_key = NotificationService._get_event_config_key(notification_type)
+        if not event_config_key:
+            logger.debug(f"No config key mapped for notification type: {notification_type}")
+            return
+        
+        # Get channel settings for this event
+        channel_settings = await ConfigService.get_config_value(db, event_config_key, None)
+        
+        if channel_settings is None:
+            # Use default: all channels enabled
+            channel_settings = {"email": True, "teams": True, "system": True}
+        elif isinstance(channel_settings, str):
+            try:
+                channel_settings = json.loads(channel_settings)
+            except json.JSONDecodeError:
+                # Backward compatibility: treat "true"/"false" as system-only
+                channel_settings = {"email": False, "teams": False, "system": channel_settings.lower() == "true"}
+        
+        # Determine which channels to use
+        channels_to_use = []
+        if channel_settings.get("email"):
+            channels_to_use.append("email")
+        if channel_settings.get("teams"):
+            channels_to_use.append("teams")
+        # Note: system channel is already handled by creating the Notification record
+        
+        if not channels_to_use:
+            logger.debug(f"No external channels enabled for {notification_type}")
+            return
+        
+        # Map priority
+        priority_map = {
+            NotificationPriority.LOW: ChannelPriority.LOW,
+            NotificationPriority.MEDIUM: ChannelPriority.MEDIUM,
+            NotificationPriority.HIGH: ChannelPriority.HIGH,
+            NotificationPriority.URGENT: ChannelPriority.URGENT,
+        }
+        
+        # Deliver to external channels
+        delivery_service = NotificationDeliveryService(db)
+        await delivery_service.deliver(
+            title=title,
+            message=message,
+            user_id=user_id,
+            recipient_email=recipient_email,
+            recipient_name=recipient_name,
+            priority=priority_map.get(priority, ChannelPriority.MEDIUM),
+            action_url=action_url,
+            action_label=action_label,
+            case_id=case_id,
+            variable_id=variable_id,
+            channels=channels_to_use
+        )
+        
+        logger.info(f"Delivered notification to channels: {channels_to_use}")
+    
+    @staticmethod
+    def _get_event_config_key(notification_type: NotificationType) -> str:
+        """Map NotificationType to its configuration key"""
+        type_to_key = {
+            NotificationType.MATCH_SUGGESTED: "notification_on_match_suggested",
+            NotificationType.OWNER_REVIEW_REQUEST: "notification_on_owner_review_request",
+            NotificationType.OWNER_APPROVED: "notification_on_owner_approved",
+            NotificationType.OWNER_REJECTED: "notification_on_owner_rejected",
+            NotificationType.REQUESTER_REVIEW_REQUEST: "notification_on_requester_review_request",
+            NotificationType.MATCH_CONFIRMED: "notification_on_match_confirmed",
+            NotificationType.MATCH_DISCARDED: "notification_on_match_discarded",
+            NotificationType.SYNC_COMPLETED: "notification_on_sync_completed",
+            NotificationType.SYSTEM_ALERT: "notification_on_system_alert",
+            NotificationType.OWNER_VALIDATION_REQUEST: "notification_on_owner_validation_request",
+            NotificationType.VARIABLE_APPROVED: "notification_on_variable_approved",
+            NotificationType.VARIABLE_ADDED: "notification_on_variable_added",
+            NotificationType.VARIABLE_CANCELLED: "notification_on_variable_cancelled",
+            NotificationType.MODERATION_REQUEST: "notification_on_moderation_request",
+            NotificationType.MODERATION_APPROVED: "notification_on_moderation_approved",
+            NotificationType.MODERATION_REJECTED: "notification_on_moderation_rejected",
+            NotificationType.MODERATION_CANCELLED: "notification_on_moderation_cancelled",
+            NotificationType.MODERATION_STARTED: "notification_on_moderation_started",
+            NotificationType.MODERATION_EXPIRING: "notification_on_moderation_expiring",
+            NotificationType.MODERATION_EXPIRED: "notification_on_moderation_expired",
+            NotificationType.MODERATION_REVOKED: "notification_on_moderation_revoked",
+            NotificationType.AGENT_DECISION_CONSENSUS: "notification_on_agent_decision_consensus",
+            NotificationType.AGENT_DECISION_APPROVED: "notification_on_agent_decision_approved",
+            NotificationType.AGENT_DECISION_REJECTED: "notification_on_agent_decision_rejected",
+            NotificationType.MATCH_REQUEST: "notification_on_match_request",
+            NotificationType.INVOLVEMENT_CREATED: "notification_on_involvement_created",
+            NotificationType.INVOLVEMENT_DATE_SET: "notification_on_involvement_date_set",
+            NotificationType.INVOLVEMENT_DUE_REMINDER: "notification_on_involvement_due_reminder",
+            NotificationType.INVOLVEMENT_OVERDUE: "notification_on_involvement_overdue",
+            NotificationType.INVOLVEMENT_COMPLETED: "notification_on_involvement_completed",
+        }
+        return type_to_key.get(notification_type, "")
     
     @staticmethod
     async def get_user_notifications(
@@ -193,6 +344,61 @@ class NotificationService:
             expires_days=3
         )
     
+    @classmethod
+    async def notify_variable_added(
+        cls,
+        db: AsyncSession,
+        approver_id: int,
+        case_id: int,
+        case_title: str,
+        variable_id: int,
+        variable_name: str,
+        added_by_name: str
+    ) -> Notification:
+        """Notify project approver when a variable is added to a case"""
+        return await cls.create_notification(
+            db=db,
+            user_id=approver_id,
+            type=NotificationType.VARIABLE_ADDED,
+            title="Variável adicionada",
+            message=f"{added_by_name} adicionou '{variable_name}' ao case '{case_title}'",
+            priority=NotificationPriority.MEDIUM,
+            case_id=case_id,
+            variable_id=variable_id,
+            action_url=f"/cases/{case_id}?tab=variables",
+            action_label="Ver variáveis"
+        )
+    
+    @classmethod
+    async def notify_variable_cancelled(
+        cls,
+        db: AsyncSession,
+        recipient_id: int,
+        case_id: int,
+        case_title: str,
+        variable_id: int,
+        variable_name: str,
+        cancelled_by_name: str,
+        reason: Optional[str] = None
+    ) -> Notification:
+        """Notify involved parties when a variable is cancelled"""
+        message = f"{cancelled_by_name} cancelou a variável '{variable_name}' no case '{case_title}'"
+        if reason:
+            message += f". Motivo: {reason}"
+        
+        return await cls.create_notification(
+            db=db,
+            user_id=recipient_id,
+            type=NotificationType.VARIABLE_CANCELLED,
+            title="Variável cancelada",
+            message=message,
+            priority=NotificationPriority.HIGH,
+            case_id=case_id,
+            variable_id=variable_id,
+            action_url=f"/cases/{case_id}?tab=variables",
+            action_label="Ver case"
+        )
+    
     # Legacy compatibility methods
     async def send_email(self, to_email: str, subject: str, body: str):
         """Mock email sending for legacy compatibility"""
@@ -206,3 +412,4 @@ class NotificationService:
 
 
 notification_service = NotificationService()
+

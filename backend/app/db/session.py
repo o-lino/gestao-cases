@@ -15,3 +15,12 @@ SessionLocal = sessionmaker(
     bind=engine,
     class_=AsyncSession
 )
+
+
+async def get_db():
+    """Dependency to get database session"""
+    async with SessionLocal() as session:
+        try:
+            yield session
+        finally:
+            await session.close()

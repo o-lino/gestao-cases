@@ -12,6 +12,7 @@ interface User {
 
 const ROLES = [
   { value: 'USER', label: 'Usuário', color: 'bg-blue-100 text-blue-800', description: 'Pode criar e gerenciar próprios cases' },
+  { value: 'CURATOR', label: 'Curador', color: 'bg-teal-100 text-teal-800', description: 'Pode corrigir sugestões de tabelas' },
   { value: 'MODERATOR', label: 'Moderador', color: 'bg-purple-100 text-purple-800', description: 'Pode aprovar/rejeitar cases de outros' },
   { value: 'ADMIN', label: 'Administrador', color: 'bg-orange-100 text-orange-800', description: 'Acesso total ao sistema' },
 ]
@@ -159,64 +160,66 @@ export function UserManagement() {
 
       {/* Users Table */}
       <div className="border rounded-lg overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-muted/50">
-            <tr>
-              <th className="px-4 py-3 text-left text-sm font-medium">Usuário</th>
-              <th className="px-4 py-3 text-left text-sm font-medium">Email</th>
-              <th className="px-4 py-3 text-left text-sm font-medium">Função</th>
-              <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
-              <th className="px-4 py-3 text-right text-sm font-medium">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsers.map((user) => (
-              <tr key={user.id} className="border-t hover:bg-muted/50">
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <UserIcon className="h-4 w-4 text-primary" />
-                    </div>
-                    <span className="font-medium">{user.name}</span>
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">{user.email}</td>
-                <td className="px-4 py-3">{getRoleBadge(user.role)}</td>
-                <td className="px-4 py-3">
-                  <button
-                    onClick={() => handleToggleActive(user)}
-                    className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full ${
-                      user.active 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}
-                  >
-                    {user.active ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
-                    {user.active ? 'Ativo' : 'Inativo'}
-                  </button>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center justify-end gap-2">
-                    <button
-                      onClick={() => openModal(user)}
-                      className="p-2 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground"
-                      title="Editar"
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(user)}
-                      className="p-2 hover:bg-destructive/10 rounded-lg text-muted-foreground hover:text-destructive"
-                      title="Desativar"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-muted/50">
+              <tr>
+                <th className="px-4 py-3 text-left text-sm font-medium whitespace-nowrap">Usuário</th>
+                <th className="px-4 py-3 text-left text-sm font-medium whitespace-nowrap">Email</th>
+                <th className="px-4 py-3 text-left text-sm font-medium whitespace-nowrap">Função</th>
+                <th className="px-4 py-3 text-left text-sm font-medium whitespace-nowrap">Status</th>
+                <th className="px-4 py-3 text-right text-sm font-medium whitespace-nowrap">Ações</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredUsers.map((user) => (
+                <tr key={user.id} className="border-t hover:bg-muted/50">
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <UserIcon className="h-4 w-4 text-primary" />
+                      </div>
+                      <span className="font-medium">{user.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{user.email}</td>
+                  <td className="px-4 py-3 whitespace-nowrap">{getRoleBadge(user.role)}</td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <button
+                      onClick={() => handleToggleActive(user)}
+                      className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full ${
+                        user.active 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
+                      {user.active ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                      {user.active ? 'Ativo' : 'Inativo'}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => openModal(user)}
+                        className="p-2 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground"
+                        title="Editar"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(user)}
+                        className="p-2 hover:bg-destructive/10 rounded-lg text-muted-foreground hover:text-destructive"
+                        title="Desativar"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Modal */}

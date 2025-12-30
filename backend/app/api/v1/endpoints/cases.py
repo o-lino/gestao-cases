@@ -1,13 +1,15 @@
 from typing import List, Any, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
+from pydantic import BaseModel
 
 from app.api import deps
 from app.models.case import Case
 from app.models.collaborator import Collaborator
-from app.schemas.case import CaseCreate, CaseResponse, CaseUpdate, CaseStatus
+from app.schemas.case import CaseCreate, CaseResponse, CaseUpdate, CaseStatus, AuditLogResponse
 from app.services.case_service import case_service
 from app.schemas.common import PaginatedResponse
+from app.services.search_worker import trigger_variable_search
 
 router = APIRouter()
 
@@ -17,11 +19,21 @@ async def create_case(
     db: AsyncSession = Depends(deps.get_db),
     case_in: CaseCreate,
     current_user: Collaborator = Depends(deps.get_current_user),
+    background_tasks: BackgroundTasks,
 ) -> Any:
     """
     Create new case.
+    Automatically triggers search for all variables in background.
     """
-    return await case_service.create(db, case_in, current_user)
+    case = await case_service.create(db, case_in, current_user)
+    
+    # Auto-trigger search for all variables in background
+    if case.variables:
+        for var in case.variables:
+            if not var.is_cancelled:
+                background_tasks.add_task(trigger_variable_search, db, var.id)
+    
+    return case
 
 @router.get("/", response_model=PaginatedResponse[CaseResponse])
 async def read_cases(
@@ -105,7 +117,28 @@ async def transition_case(
     """
     return await case_service.transition(db, case_id, target_status, current_user)
 
-@router.get("/{case_id}/history", response_model=List[Any])
+
+class CaseCancelRequest(BaseModel):
+    reason: Optional[str] = None
+
+
+@router.post("/{case_id}/cancel", response_model=CaseResponse)
+async def cancel_case(
+    *,
+    db: AsyncSession = Depends(deps.get_db),
+    case_id: int,
+    cancel_in: CaseCancelRequest,
+    current_user: Collaborator = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Cancel a case and all its active variables.
+    The case status will be set to CANCELLED and all non-cancelled variables
+    will be marked as cancelled with the provided reason.
+    """
+    return await case_service.cancel(db, case_id, current_user, cancel_in.reason)
+
+
+@router.get("/{case_id}/history", response_model=List[AuditLogResponse])
 async def get_case_history(
     *,
     db: AsyncSession = Depends(deps.get_db),
@@ -113,23 +146,57 @@ async def get_case_history(
     current_user: Collaborator = Depends(deps.get_current_user),
 ) -> Any:
     """
-    Get case history (audit logs).
+    Get case history (audit logs) with enriched user information.
     """
     from app.models.audit import AuditLog
     from sqlalchemy import select, desc
+    import logging
     
     # Verify case exists
     case = await case_service.get(db, case_id)
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
-        
-    query = select(AuditLog).where(
-        AuditLog.entity_type == "CASE",
-        AuditLog.entity_id == case_id
-    ).order_by(desc(AuditLog.created_at))
     
-    result = await db.execute(query)
-    return result.scalars().all()
+    try:
+        query = select(AuditLog).where(
+            AuditLog.entity_type == "CASE",
+            AuditLog.entity_id == case_id
+        ).order_by(desc(AuditLog.created_at))
+        
+        result = await db.execute(query)
+        logs = result.scalars().all()
+        
+        # Enrich logs with user names
+        enriched_logs = []
+        user_cache = {}
+        
+        for log in logs:
+            actor_name = None
+            if log.actor_id:
+                if log.actor_id not in user_cache:
+                    user_result = await db.execute(
+                        select(Collaborator).where(Collaborator.id == log.actor_id)
+                    )
+                    user = user_result.scalars().first()
+                    user_cache[log.actor_id] = user.name if user else f"Usuário #{log.actor_id}"
+                actor_name = user_cache[log.actor_id]
+            
+            enriched_logs.append({
+                "id": log.id,
+                "entity_type": log.entity_type,
+                "entity_id": log.entity_id,
+                "actor_id": log.actor_id,
+                "actor_name": actor_name,
+                "action_type": log.action_type,
+                "changes": log.changes,
+                "created_at": log.created_at
+            })
+        
+        return enriched_logs
+    except Exception as e:
+        # Log the error but return empty list to avoid breaking the UI
+        logging.warning(f"Failed to fetch audit logs for case {case_id}: {e}")
+        return []
 
 @router.get("/{case_id}/documents", response_model=List[Any])
 async def get_case_documents(
@@ -143,17 +210,20 @@ async def get_case_documents(
     """
     from app.models.document import CaseDocument
     from sqlalchemy import select, desc
+    import logging
     
     # Verify case exists
     case = await case_service.get(db, case_id)
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
-        
-    query = select(CaseDocument).where(CaseDocument.case_id == case_id).order_by(desc(CaseDocument.created_at))
-    result = await db.execute(query)
-    return result.scalars().all()
-
-from pydantic import BaseModel
+    
+    try:
+        query = select(CaseDocument).where(CaseDocument.case_id == case_id).order_by(desc(CaseDocument.created_at))
+        result = await db.execute(query)
+        return result.scalars().all()
+    except Exception as e:
+        logging.warning(f"Failed to fetch documents for case {case_id}: {e}")
+        return []
 
 class DocumentCreate(BaseModel):
     filename: str
@@ -231,12 +301,80 @@ async def get_case_comments(
     """
     from app.models.comment import Comment
     from sqlalchemy import select, desc
+    import logging
     
     # Verify case exists
     case = await case_service.get(db, case_id)
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
-        
-    query = select(Comment).where(Comment.case_id == case_id).order_by(desc(Comment.created_at))
-    result = await db.execute(query)
-    return result.scalars().all()
+    
+    try:
+        query = select(Comment).where(Comment.case_id == case_id).order_by(desc(Comment.created_at))
+        result = await db.execute(query)
+        return result.scalars().all()
+    except Exception as e:
+        logging.warning(f"Failed to fetch comments for case {case_id}: {e}")
+        return []
+
+
+# ============================================================================
+# Variable Management Endpoints
+# ============================================================================
+
+from app.schemas.case import CaseVariableCreate, CaseVariableResponse, CaseVariableCancel
+
+
+@router.post("/{case_id}/variables", response_model=CaseVariableResponse, status_code=status.HTTP_201_CREATED)
+async def add_case_variable(
+    *,
+    db: AsyncSession = Depends(deps.get_db),
+    case_id: int,
+    variable_in: CaseVariableCreate,
+    current_user: Collaborator = Depends(deps.get_current_user),
+    background_tasks: BackgroundTasks,
+) -> Any:
+    """
+    Add a new variable to an existing case.
+    Notifies project approvers (MANAGER/ADMIN) of the addition.
+    Automatically triggers search for the variable in background.
+    Allowed when case is in DRAFT, REVIEW, SUBMITTED, or APPROVED status.
+    """
+    variable = await case_service.add_variable(db, case_id, variable_in, current_user)
+    
+    # Auto-trigger search for the new variable in background
+    background_tasks.add_task(trigger_variable_search, db, variable.id)
+    
+    return variable
+
+
+@router.patch("/{case_id}/variables/{variable_id}/cancel", response_model=CaseVariableResponse)
+async def cancel_case_variable(
+    *,
+    db: AsyncSession = Depends(deps.get_db),
+    case_id: int,
+    variable_id: int,
+    cancel_in: CaseVariableCancel,
+    current_user: Collaborator = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Cancel a variable in a case.
+    Notifies the entire involved chain (creator, reviewer, table owner if matched).
+    Only allowed when case is in DRAFT or REVIEW status.
+    """
+    return await case_service.cancel_variable(db, case_id, variable_id, cancel_in, current_user)
+
+
+@router.delete("/{case_id}/variables/{variable_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_case_variable(
+    *,
+    db: AsyncSession = Depends(deps.get_db),
+    case_id: int,
+    variable_id: int,
+    current_user: Collaborator = Depends(deps.get_current_user),
+) -> None:
+    """
+    Delete a variable permanently from a case.
+    Only allowed when case is in DRAFT, REVIEW, SUBMITTED, or APPROVED status.
+    Not allowed for CLOSED or CANCELLED cases.
+    """
+    return await case_service.delete_variable(db, case_id, variable_id, current_user)

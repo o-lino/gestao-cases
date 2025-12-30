@@ -1,4 +1,4 @@
-import { LayoutDashboard, FolderOpen, Settings, LogOut, ChevronLeft, ChevronRight, X, Clock, Users, Shield, UserCheck } from 'lucide-react'
+import { LayoutDashboard, FolderOpen, Settings, LogOut, ChevronLeft, ChevronRight, X, Clock, Users, Shield, UserCheck, Database } from 'lucide-react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { useAuth, UserRole } from '@/context/AuthContext'
@@ -18,6 +18,7 @@ const baseNavigation: NavItem[] = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Cases', href: '/cases', icon: FolderOpen },
   { name: 'Pendências', href: '/pending-reviews', icon: Clock }, // All users have their own pending items
+  { name: 'Curadoria', href: '/curator', icon: Database, roles: [UserRole.CURATOR, UserRole.MODERATOR, UserRole.ADMIN] },
   { name: 'Moderação', href: '/moderation', icon: UserCheck, roles: [UserRole.MODERATOR, UserRole.ADMIN] },
   { name: 'Configurações', href: '/settings', icon: Settings },
 ]

@@ -10,6 +10,7 @@ import { CaseFormHeader } from '@/components/cases/CaseFormHeader'
 import { CaseFormDetails } from '@/components/cases/CaseFormDetails'
 import { CaseVariablesList } from '@/components/cases/CaseVariablesList'
 import { VariableWizard } from '@/components/cases/VariableWizard'
+import { ExcelImportModal } from '@/components/cases/ExcelImportModal'
 import { useToast } from '@/components/common/Toast'
 import { StickyFooter } from '@/components/common/StickyFooter'
 
@@ -55,6 +56,7 @@ export function CaseForm() {
   const [formDataToSubmit, setFormDataToSubmit] = useState<CaseFormValues | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isVariableModalOpen, setIsVariableModalOpen] = useState(false)
+  const [isExcelImportOpen, setIsExcelImportOpen] = useState(false)
   
   // Mock data for autocomplete
   const existingMacroCases = [
@@ -167,6 +169,11 @@ export function CaseForm() {
     setIsVariableModalOpen(false)
   }
 
+  const handleImportVariables = (variables: any[]) => {
+    variables.forEach(v => append(v))
+    toast.success(`${variables.length} variáveis importadas com sucesso!`)
+  }
+
   const onError = () => {
     toast.error('Por favor, corrija os erros no formulário antes de continuar.')
   }
@@ -203,7 +210,8 @@ export function CaseForm() {
               fields={fields} 
               remove={remove} 
               errors={errors} 
-              onOpenModal={() => setIsVariableModalOpen(true)} 
+              onOpenModal={() => setIsVariableModalOpen(true)}
+              onOpenExcelImport={() => setIsExcelImportOpen(true)}
             />
           </div>
 
@@ -314,6 +322,13 @@ export function CaseForm() {
           onAdd={handleAddVariable} 
         />
       )}
+
+      {/* Excel Import Modal */}
+      <ExcelImportModal
+        isOpen={isExcelImportOpen}
+        onClose={() => setIsExcelImportOpen(false)}
+        onImport={handleImportVariables}
+      />
     </div>
   )
 }

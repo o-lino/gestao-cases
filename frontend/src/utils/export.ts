@@ -14,9 +14,6 @@ export function exportCaseToPDF(caseData: any) {
     CLOSED: 'Fechado',
   }
 
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
-
   const formatDate = (dateStr: string) => 
     dateStr ? new Date(dateStr).toLocaleDateString('pt-BR') : '-'
 
@@ -79,7 +76,7 @@ export function exportCaseToPDF(caseData: any) {
       </div>
 
       <div class="section">
-        <h2>Datas e Orçamento</h2>
+        <h2>Datas</h2>
         <div class="grid">
           <div class="field">
             <label>Data Início</label>
@@ -88,10 +85,6 @@ export function exportCaseToPDF(caseData: any) {
           <div class="field">
             <label>Data Fim</label>
             <value>${formatDate(caseData.end_date)}</value>
-          </div>
-          <div class="field">
-            <label>Orçamento</label>
-            <value>${caseData.budget ? formatCurrency(caseData.budget) : '-'}</value>
           </div>
           <div class="field">
             <label>Criado em</label>
@@ -152,7 +145,6 @@ export function exportCasesToCSV(cases: any[], filename: string = 'cases') {
     'Cliente',
     'Macro Case',
     'Status',
-    'Orçamento',
     'Data Início',
     'Data Fim',
     'Solicitante',
@@ -165,7 +157,6 @@ export function exportCasesToCSV(cases: any[], filename: string = 'cases') {
     `"${(c.client_name || '').replace(/"/g, '""')}"`,
     `"${(c.macro_case || '').replace(/"/g, '""')}"`,
     c.status,
-    c.budget || '',
     c.start_date || '',
     c.end_date || '',
     c.requester_email || '',

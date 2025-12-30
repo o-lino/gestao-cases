@@ -111,3 +111,16 @@ async def require_moderator_or_above(
             detail="Moderator access required"
         )
     return current_user
+
+
+async def require_curator_or_above(
+    current_user: Collaborator = Depends(get_current_user)
+) -> Collaborator:
+    """Dependency that requires CURATOR, MODERATOR, or ADMIN role."""
+    if not UserRole.has_permission(current_user.role, UserRole.CURATOR.value):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Curator access required"
+        )
+    return current_user
+

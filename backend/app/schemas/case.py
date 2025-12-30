@@ -4,6 +4,19 @@ from datetime import date, datetime
 from enum import Enum
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 
+# Audit Log schema for history endpoint
+class AuditLogResponse(BaseModel):
+    id: int
+    entity_type: str
+    entity_id: int
+    actor_id: Optional[int] = None
+    actor_name: Optional[str] = None  # Added for display
+    action_type: str
+    changes: Dict[str, Any]
+    created_at: datetime
+    
+    model_config = ConfigDict(from_attributes=True)
+
 class CaseStatus(str, Enum):
     DRAFT = "DRAFT"
     SUBMITTED = "SUBMITTED"
@@ -11,6 +24,7 @@ class CaseStatus(str, Enum):
     APPROVED = "APPROVED"
     REJECTED = "REJECTED"
     CLOSED = "CLOSED"
+    CANCELLED = "CANCELLED"
 
 class CaseVariableSchema(BaseModel):
     variable_name: str
@@ -25,6 +39,22 @@ class CaseVariableSchema(BaseModel):
     options: Optional[str] = None
     
     model_config = ConfigDict(from_attributes=True)
+
+class CaseVariableCreate(CaseVariableSchema):
+    """Schema for creating a new variable in an existing case"""
+    pass
+
+class CaseVariableResponse(CaseVariableSchema):
+    """Schema for variable response with id and status fields"""
+    id: int
+    search_status: Optional[str] = "PENDING"
+    is_cancelled: bool = False
+    cancelled_at: Optional[datetime] = None
+    cancellation_reason: Optional[str] = None
+
+class CaseVariableCancel(BaseModel):
+    """Schema for cancelling a variable"""
+    reason: Optional[str] = Field(None, max_length=500, description="Motivo do cancelamento")
 
 class CaseBase(BaseModel):
     title: str = Field(..., min_length=5, max_length=255, description="Título descritivo do case")
@@ -55,7 +85,7 @@ class CaseResponse(CaseBase):
     assigned_to_id: Optional[int]
     created_at: datetime
     updated_at: datetime
-    variables: List[CaseVariableSchema] = []
+    variables: List[CaseVariableResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
 

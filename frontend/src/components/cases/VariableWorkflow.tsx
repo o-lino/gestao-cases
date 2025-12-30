@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 // Variable status workflow
 export type VariableStatus = 
   | 'PENDING'
+  | 'AI_SEARCHING'
   | 'SEARCHING'
   | 'MATCHED'
   | 'OWNER_REVIEW'
@@ -34,7 +35,8 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
 ]
 
 const STATUS_CONFIG: Record<VariableStatus, { color: string; bgColor: string; label: string }> = {
-  PENDING: { color: 'text-gray-500', bgColor: 'bg-gray-100', label: 'Pendente' },
+  PENDING: { color: 'text-gray-500', bgColor: 'bg-gray-100', label: 'Aguardando Busca' },
+  AI_SEARCHING: { color: 'text-blue-500', bgColor: 'bg-blue-100', label: 'Busca IA...' },
   SEARCHING: { color: 'text-blue-500', bgColor: 'bg-blue-100', label: 'Buscando...' },
   MATCHED: { color: 'text-purple-500', bgColor: 'bg-purple-100', label: 'Match Encontrado' },
   OWNER_REVIEW: { color: 'text-orange-500', bgColor: 'bg-orange-100', label: 'Aguardando Owner' },
@@ -143,7 +145,10 @@ export function VariableProgressCard({ variable, onAction, isExpanded = false }:
   const getAvailableActions = () => {
     switch (variable.status) {
       case 'PENDING':
-        return [{ id: 'search', label: 'Buscar Dados', primary: true }]
+      case 'AI_SEARCHING':
+      case 'SEARCHING':
+        // Search is now automatic - no manual actions available
+        return []
       case 'MATCHED':
         return [
           { id: 'select', label: 'Enviar para Validação', primary: true },

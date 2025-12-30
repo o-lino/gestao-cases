@@ -1,5 +1,11 @@
 # Sistema de Gestão de Cases - v2.0
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-18.2-61DAFB?logo=react)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?logo=typescript)](https://www.typescriptlang.org/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)](https://www.docker.com/)
+
 Sistema web para gerenciamento completo do ciclo de vida de projetos de consultoria (cases).
 
 ## 🚀 Stack Tecnológica
@@ -145,7 +151,7 @@ frontend/
 
 ## 📄 Licença
 
-Este projeto é proprietário. Todos os direitos reservados.
+Este projeto está licenciado sob a [Licença MIT](LICENSE) - veja o arquivo LICENSE para detalhes.
 
 ## 🆘 Troubleshooting
 
