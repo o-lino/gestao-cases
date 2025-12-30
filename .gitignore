@@ -54,6 +54,9 @@ env/
 .pytest_cache/
 htmlcov/
 .tox/
+playwright-report/
+test-results/
+results.json
 
 # Node
 node_modules/

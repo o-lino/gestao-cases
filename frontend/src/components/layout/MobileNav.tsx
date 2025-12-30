@@ -3,7 +3,7 @@ import { useSidebar } from '@/context/SidebarContext'
 import { useResponsive } from '@/hooks/useResponsive'
 
 export function MobileNav() {
-  const { toggle, isOpen } = useSidebar()
+  const { toggle } = useSidebar()
   const { isMobile, isTablet } = useResponsive()
 
   // Only show on mobile and tablet
@@ -11,7 +11,6 @@ export function MobileNav() {
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation()
-    console.log('[MobileNav] Hamburger clicked, current isOpen:', isOpen)
     toggle()
   }
 

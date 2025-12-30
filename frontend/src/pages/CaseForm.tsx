@@ -140,9 +140,7 @@ export function CaseForm() {
         estimated_use_date: formDataToSubmit.estimated_use_date || undefined,
       }
       
-      console.log('Creating case with data:', JSON.stringify(cleanedData, null, 2))
       const result = await caseService.create(cleanedData)
-      console.log('Case created successfully:', result)
       
       toast.success('Case criado com sucesso!')
       
@@ -287,7 +285,6 @@ export function CaseForm() {
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
-                  console.log('[Modal] Cancel button clicked')
                   setShowConfirmation(false)
                 }}
                 disabled={isSubmitting}
@@ -300,7 +297,6 @@ export function CaseForm() {
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
-                  console.log('[Modal] Confirm button clicked, isSubmitting:', isSubmitting)
                   if (!isSubmitting) {
                     onConfirmSubmit()
                   }

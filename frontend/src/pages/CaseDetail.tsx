@@ -604,11 +604,14 @@ function VariablesTab({ variables, caseId, caseStatus, userId, caseCreatedById, 
     try {
       const { matchingService } = await import('@/services/matchingService')
       const matches = await matchingService.getVariableMatches(variableId)
-      console.log('Variable matches:', matches)
-      // TODO: Open modal with match details
-      alert(`Encontrados ${matches.length} matches para esta variável. Ver console para detalhes.`)
+      // Find the variable and show its details in the modal
+      const variable = variables.find((v: any) => v.id === variableId)
+      if (variable) {
+        const matchInfo = getMatchStatus(variable)
+        setDetailVariable(buildVariableDetail(variable, matchInfo))
+      }
     } catch (error) {
-      console.error('Failed to get matches:', error)
+      toast.error('Erro ao carregar detalhes da variável')
     }
   }
 
