@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { 
   Clock, FileText, Check, ChevronDown, ChevronUp, 
-  Inbox, Send, Eye, Tag, Calendar, Loader2, CheckCircle2, History, XCircle, Database
+  Inbox, Send, Eye, Tag, Calendar, Loader2, CheckCircle2, History
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { PageLayout } from '@/components/common/PageLayout'
-import { caseService, Case, CaseVariable } from '@/services/caseService'
+import { caseService, Case } from '@/services/caseService'
 import { matchingService, PendingOwnerAction } from '@/services/matchingService'
 import { useAuth } from '@/context/AuthContext'
 
@@ -339,7 +339,7 @@ export function PendingReviews() {
             </div>
           ) : (
             <div className="divide-y divide-gray-100 border border-gray-100 rounded-2xl bg-white overflow-hidden shadow-sm">
-              {casesToShow.map((caseItem, index) => (
+              {casesToShow.map((caseItem, _index) => (
                 <div
                   key={caseItem.id}
                   className="group bg-white hover:bg-gray-50/50 transition-colors"

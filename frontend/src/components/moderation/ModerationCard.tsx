@@ -5,7 +5,7 @@
  */
 
 import { useState } from 'react'
-import { Users, Clock, Calendar, XCircle, RefreshCw, AlertTriangle } from 'lucide-react'
+import { Clock, Calendar, XCircle, RefreshCw, AlertTriangle } from 'lucide-react'
 import { 
   ModerationAssociation, 
   moderationService,

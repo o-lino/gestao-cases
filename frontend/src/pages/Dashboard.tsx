@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
 import { caseService, Case } from '@/services/caseService'
 import { useAuth } from '@/context/AuthContext'
-import { Activity, Briefcase, Users, Clock, PieChart, Filter, TrendingUp, ArrowUpRight, Loader2 } from 'lucide-react'
+import { Activity, Briefcase, Users, Clock, Filter, TrendingUp, ArrowUpRight, Loader2 } from 'lucide-react'
 import { CaseStatusChart, CaseTrendChart, CaseBarChart } from '@/components/charts'
-import { format, subDays, parseISO, startOfDay } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import { format, subDays } from 'date-fns'
 import { Link } from 'react-router-dom'
 
 type PeriodFilter = '7d' | '30d' | '90d' | 'all'

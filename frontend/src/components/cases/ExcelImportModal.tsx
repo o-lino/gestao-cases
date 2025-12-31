@@ -19,7 +19,6 @@ import {
   AlertCircle,
   Download,
   Trash2,
-  Edit2,
   RefreshCw
 } from 'lucide-react'
 

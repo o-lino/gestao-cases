@@ -8,8 +8,7 @@ import { useState } from 'react'
 import { X, UserCheck, UserX, Clock, MessageSquare, Check, XIcon } from 'lucide-react'
 import { 
   ModerationRequest, 
-  moderationService,
-  REQUEST_STATUS_LABELS
+  moderationService
 } from '@/services/moderationService'
 
 interface ModerationResponseModalProps {

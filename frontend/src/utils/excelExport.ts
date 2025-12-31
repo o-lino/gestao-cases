@@ -1,5 +1,16 @@
 import { Case } from '@/services/caseService'
-import { saveAs } from 'file-saver'
+
+// Native browser download helper (replaces file-saver)
+function downloadFile(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
 
 // Excel export using CSV with special encoding for Excel compatibility
 export function exportCasesToExcel(cases: Case[], filename: string = 'cases') {
@@ -51,7 +62,7 @@ export function exportCasesToExcel(cases: Case[], filename: string = 'cases') {
   ].join('\r\n')
   
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' })
-  saveAs(blob, `${filename}_${formatDateForFilename(new Date())}.csv`)
+  downloadFile(blob, `${filename}_${formatDateForFilename(new Date())}.csv`)
 }
 
 // Full Excel export with multiple sheets (requires xlsx library)

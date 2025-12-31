@@ -10,13 +10,10 @@ import {
   Users, 
   UserPlus, 
   Clock, 
-  CheckCircle, 
-  XCircle, 
   Send,
   Inbox,
   History,
   RefreshCw,
-  AlertCircle,
   ChevronRight
 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
@@ -26,9 +23,7 @@ import {
   ModerationAssociation,
   UserSummary,
   REQUEST_STATUS_LABELS,
-  REQUEST_STATUS_COLORS,
-  ASSOCIATION_STATUS_LABELS,
-  ASSOCIATION_STATUS_COLORS
+  REQUEST_STATUS_COLORS
 } from '@/services/moderationService'
 import { ModerationRequestModal } from '@/components/moderation/ModerationRequestModal'
 import { ModerationResponseModal } from '@/components/moderation/ModerationResponseModal'
@@ -38,7 +33,7 @@ import { PageLayout, PageTab } from '@/components/common/PageLayout'
 type TabType = 'users' | 'moderator' | 'sent' | 'received' | 'history'
 
 export function ModerationPage() {
-  const { user, isModeratorOrAbove } = useAuth()
+  const { user: _user, isModeratorOrAbove } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
   
   // State
@@ -259,7 +254,7 @@ function UserList({ users, onRevolkSuccess }: { users: Array<{ user: UserSummary
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-      {users.map(({ user, association }) => (
+      {users.map(({ user: _user, association }) => (
         <ModerationCard
           key={association.id}
           association={association}

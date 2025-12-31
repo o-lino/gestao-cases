@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
-import { format, differenceInHours, differenceInDays, addDays, isPast, isFuture } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import { useState, useEffect } from 'react'
+import { differenceInHours, addDays } from 'date-fns'
 import { Clock, AlertTriangle, AlertCircle, CheckCircle, Bell, X } from 'lucide-react'
 import { Case } from '@/services/caseService'
 import { cn } from '@/lib/utils'

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { 
-  Check, X, MessageSquare, Database, User, AlertCircle, 
-  ChevronDown, ExternalLink, RefreshCw, MessageCircle
+  Check, X, MessageSquare, Database, User, 
+  ChevronDown, RefreshCw, MessageCircle
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -38,7 +38,7 @@ export function OwnerReviewPanel({
   variable,
   onApprove,
   onReject,
-  onSkip,
+  onSkip: _onSkip,
   onStructuredRespond,
   alternatives = [],
 }: OwnerReviewPanelProps) {
@@ -247,7 +247,7 @@ export function RequesterReviewPanel({
   onRequestAlternative,
 }: RequesterReviewPanelProps) {
   const [comment, setComment] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitting] = useState(false)
 
   return (
     <div className="bg-card border rounded-xl overflow-hidden">

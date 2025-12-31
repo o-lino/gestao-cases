@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Case } from '@/services/caseService'
-import { Clock, User, ChevronRight } from 'lucide-react'
+import { Clock, ChevronRight } from 'lucide-react'
 
 interface KanbanBoardProps {
   cases: Case[]
@@ -58,7 +58,7 @@ function KanbanCard({ caseData }: { caseData: Case }) {
 }
 
 function KanbanColumn({ 
-  id, 
+  id: _id, 
   title, 
   color, 
   cases 
@@ -95,7 +95,7 @@ function KanbanColumn({
   )
 }
 
-export function KanbanBoard({ cases, onCaseClick, onStatusChange }: KanbanBoardProps) {
+export function KanbanBoard({ cases, onCaseClick: _onCaseClick, onStatusChange: _onStatusChange }: KanbanBoardProps) {
   const groupedCases = useMemo(() => {
     const groups: Record<string, Case[]> = {}
     

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Copy, Check } from 'lucide-react'
+import { Copy } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { caseService, Case } from '@/services/caseService'
 import { useToast } from '@/components/common/Toast'

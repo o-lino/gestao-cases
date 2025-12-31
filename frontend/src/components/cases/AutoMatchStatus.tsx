@@ -15,7 +15,7 @@ interface AutoMatchStatusProps {
 }
 
 export function AutoMatchStatus({
-  variableId,
+  variableId: _variableId,
   variableName,
   status,
   matchCount = 0,

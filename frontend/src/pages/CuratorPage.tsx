@@ -6,7 +6,6 @@
 import { useState, useEffect } from 'react'
 import { 
   Database, 
-  Search, 
   CheckCircle2, 
   XCircle, 
   Clock, 
@@ -26,9 +25,8 @@ import curatorService, {
   Correction, 
   CuratorStats 
 } from '../services/curatorService'
-import matchingService from '../services/matchingService'
+
 import { useToast } from '../components/common/Toast'
-import { cn } from '../lib/utils'
 
 type TabType = 'review' | 'history' | 'stats'
 
@@ -45,7 +43,7 @@ export function CuratorPage() {
   // Modal state
   const [showCorrectionModal, setShowCorrectionModal] = useState(false)
   const [selectedVariable, setSelectedVariable] = useState<VariableForReview | null>(null)
-  const [availableTables, setAvailableTables] = useState<any[]>([])
+  const [availableTables, _setAvailableTables] = useState<any[]>([])
   const [selectedTableId, setSelectedTableId] = useState<number | null>(null)
   const [correctionReason, setCorrectionReason] = useState('')
   const [submitting, setSubmitting] = useState(false)

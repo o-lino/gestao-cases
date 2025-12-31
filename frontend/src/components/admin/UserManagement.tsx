@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, Plus, Edit2, Trash2, User as UserIcon, Shield, Check, X } from 'lucide-react'
+import { Search, Plus, Edit2, Trash2, User as UserIcon, Check, X } from 'lucide-react'
 import { useToast } from '@/components/common/Toast'
 
 interface User {

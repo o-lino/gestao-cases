@@ -6,7 +6,7 @@ interface StickyFooterProps {
   isSubmitting: boolean
 }
 
-export function StickyFooter({ onAddVariable, onSubmit, isSubmitting }: StickyFooterProps) {
+export function StickyFooter({ onAddVariable, isSubmitting }: StickyFooterProps) {
   return (
     <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-40 p-4 animate-slide-up">
       <div className="flex gap-3 max-w-7xl mx-auto">

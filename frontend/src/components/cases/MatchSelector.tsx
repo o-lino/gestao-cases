@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { 
-  Search, Database, Check, ChevronRight, RefreshCw, 
-  Zap, ArrowRight, Star, ExternalLink
+  Search, Database, ChevronRight, RefreshCw, 
+  Zap, ArrowRight
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 

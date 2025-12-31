@@ -7,9 +7,7 @@ import {
   CheckCircle,
   AlertTriangle,
   ArrowUpCircle,
-  Bell,
-  Shield,
-  Database
+  Bell
 } from 'lucide-react'
 import adminConfigService, { 
   SystemConfig, 

@@ -1,9 +1,10 @@
 import api from './api'
+import { VariableValue, HistoryEvent } from '@/types'
 
 export interface CaseVariable {
   id?: number
   variable_name: string
-  variable_value?: any
+  variable_value?: VariableValue
   variable_type: 'text' | 'number' | 'date' | 'boolean' | 'select'
   is_required?: boolean
   product?: string
@@ -48,6 +49,27 @@ interface PaginatedResponse<T> {
   size: number
 }
 
+// Type for partial case updates
+export type CaseUpdateData = Partial<Omit<Case, 'id' | 'created_at' | 'updated_at' | 'created_by'>>
+
+// Document interface
+export interface CaseDocument {
+  id: number
+  filename: string
+  s3_key: string
+  uploaded_at: string
+  uploaded_by?: number
+}
+
+// Comment interface
+export interface CaseComment {
+  id: number
+  content: string
+  created_at: string
+  author_name?: string
+  author_id?: number
+}
+
 export const caseService = {
   getAll: async (filters?: { status?: string; created_by?: number }) => {
     const params = new URLSearchParams()
@@ -68,7 +90,7 @@ export const caseService = {
     return response.data
   },
 
-  update: async (id: number, data: any) => {
+  update: async (id: number, data: CaseUpdateData) => {
     const response = await api.patch<Case>(`/cases/${id}`, data)
     return response.data
   },
@@ -81,12 +103,12 @@ export const caseService = {
   },
 
   getHistory: async (id: number) => {
-    const response = await api.get<any[]>(`/cases/${id}/history`)
+    const response = await api.get<HistoryEvent[]>(`/cases/${id}/history`)
     return response.data
   },
 
   getDocuments: async (id: number) => {
-    const response = await api.get<any[]>(`/cases/${id}/documents`)
+    const response = await api.get<CaseDocument[]>(`/cases/${id}/documents`)
     return response.data
   },
 
@@ -116,7 +138,7 @@ export const caseService = {
   },
 
   getComments: async (id: number) => {
-    const response = await api.get<any[]>(`/cases/${id}/comments`)
+    const response = await api.get<CaseComment[]>(`/cases/${id}/comments`)
     return response.data
   },
 

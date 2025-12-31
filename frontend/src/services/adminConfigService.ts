@@ -17,7 +17,7 @@ export interface SystemConfig {
   updatedBy: number | null
   updatedAt: string
   createdAt: string
-  parsedValue: any
+  parsedValue: string | number | boolean | Record<string, unknown> | null
 }
 
 export interface ApprovalConfig {
@@ -77,8 +77,65 @@ export interface ApprovalStats {
   escalatedCount: number
 }
 
+// Raw API response types (snake_case from backend)
+interface RawSystemConfig {
+  id: number
+  config_key: string
+  config_value: string
+  config_type: 'string' | 'number' | 'boolean' | 'json'
+  description: string | null
+  category: string
+  updated_by: number | null
+  updated_at: string
+  created_at: string
+  parsed_value: string | number | boolean | Record<string, unknown> | null
+}
+
+interface RawApproval {
+  id: number
+  case_id: number
+  approver_id: number
+  requester_id: number
+  escalation_level: number
+  status: ApprovalStatus
+  requested_at: string
+  sla_deadline: string | null
+  responded_at: string | null
+  escalated_at: string | null
+  response_notes: string | null
+  rejection_reason: string | null
+  reminder_count: number
+  is_overdue: boolean
+  hours_until_deadline: number
+  case?: { id: number; title: string; status: string; created_at: string } | null
+  approver?: CollaboratorBrief | null
+  requester?: CollaboratorBrief | null
+}
+
+interface RawConfigSummary {
+  approval: {
+    case_approval_required: boolean
+    approval_sla_hours: number
+  }
+  escalation: {
+    escalation_enabled: boolean
+    escalation_sla_hours: number
+    escalation_max_level: number
+    escalation_reminder_hours: number
+  }
+}
+
+interface RawApprovalStats {
+  total_pending: number
+  total_overdue: number
+  approved_today: number
+  rejected_today: number
+  average_response_hours: number
+  escalated_count: number
+}
+
 // Transform functions
-function transformConfig(data: any): SystemConfig {
+function transformConfig(data: RawSystemConfig): SystemConfig {
   return {
     id: data.id,
     configKey: data.config_key,
@@ -93,7 +150,7 @@ function transformConfig(data: any): SystemConfig {
   }
 }
 
-function transformApproval(data: any): PendingApproval {
+function transformApproval(data: RawApproval): PendingApproval {
   return {
     id: data.id,
     caseId: data.case_id,
@@ -116,12 +173,12 @@ function transformApproval(data: any): PendingApproval {
       status: data.case.status,
       createdAt: data.case.created_at
     } : null,
-    approver: data.approver,
-    requester: data.requester
+    approver: data.approver ?? null,
+    requester: data.requester ?? null
   }
 }
 
-function transformConfigSummary(data: any): ConfigSummary {
+function transformConfigSummary(data: RawConfigSummary): ConfigSummary {
   return {
     approval: {
       caseApprovalRequired: data.approval.case_approval_required,
@@ -136,7 +193,7 @@ function transformConfigSummary(data: any): ConfigSummary {
   }
 }
 
-function transformApprovalStats(data: any): ApprovalStats {
+function transformApprovalStats(data: RawApprovalStats): ApprovalStats {
   return {
     totalPending: data.total_pending,
     totalOverdue: data.total_overdue,

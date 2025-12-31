@@ -1,4 +1,4 @@
-import { saveAs } from 'file-saver'
+// Export utilities for cases
 
 // Export case to PDF (using browser print)
 export function exportCaseToPDF(caseData: any) {

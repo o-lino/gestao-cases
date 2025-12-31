@@ -5,7 +5,6 @@ import {
   Plus, 
   Edit2, 
   Trash2,
-  ChevronRight,
   Building2,
   User,
   ArrowUpRight

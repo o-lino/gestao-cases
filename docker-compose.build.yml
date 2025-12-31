@@ -1,0 +1,9 @@
+# Docker Compose for production build (no volume mounts)
+# Use: docker-compose -f docker-compose.yml -f docker-compose.build.yml run --rm frontend-build
+
+services:
+  frontend-build:
+    build: ./frontend
+    command: npm run build
+    environment:
+      - NODE_ENV=production
