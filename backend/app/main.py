@@ -12,6 +12,7 @@ from app.core.exceptions import (
     validation_error_handler,
     BusinessRuleException
 )
+from app.core.rate_limit import RateLimitMiddleware
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -23,17 +24,31 @@ app.add_exception_handler(BusinessRuleException, business_rule_exception_handler
 app.add_exception_handler(IntegrityError, integrity_error_handler)
 app.add_exception_handler(RequestValidationError, validation_error_handler)
 
-# Set all CORS enabled origins
-# Using allow_origin_regex instead of allow_origins=["*"] because
-# allow_origins=["*"] is incompatible with allow_credentials=True
-# This allows requests from any origin while still supporting credentials
-app.add_middleware(
-    CORSMiddleware,
-    allow_origin_regex=r".*",  # Allow all origins (compatible with credentials)
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Configure CORS with specific origins from settings
+# In production, BACKEND_CORS_ORIGINS should be set to your actual domains
+if settings.BACKEND_CORS_ORIGINS:
+    # Convert Pydantic URL objects to strings and strip trailing slashes for proper matching
+    origins = [str(origin).rstrip('/') for origin in settings.BACKEND_CORS_ORIGINS]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type", "X-Requested-With"],
+    )
+else:
+    # Development fallback - still more restrictive than before
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:3000"],
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type", "X-Requested-With"],
+    )
+
+# Add rate limiting middleware
+# Protects auth endpoints (10 req/min) and case creation (30 req/min)
+app.add_middleware(RateLimitMiddleware)
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 

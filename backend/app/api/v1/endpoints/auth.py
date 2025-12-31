@@ -4,54 +4,62 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from app.core import security
 from app.core.config import settings
-from app.db.session import SessionLocal
+from app.api.deps import get_db
+from app.models.collaborator import Collaborator
 from app.schemas.token import Token
 
 router = APIRouter()
 
 @router.post("/login/access-token", response_model=Token)
 async def login_access_token(
+    db: AsyncSession = Depends(get_db),
     form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Any:
     """
     OAuth2 compatible token login, get an access token for future requests
     """
-    # TODO: Validate user against DB
-    # user = await crud.user.authenticate(db, email=form_data.username, password=form_data.password)
-    # if not user:
-    #     raise HTTPException(status_code=400, detail="Incorrect email or password")
-    # elif not crud.user.is_active(user):
-    #     raise HTTPException(status_code=400, detail="Inactive user")
+    # Find user by email
+    result = await db.execute(
+        select(Collaborator).where(Collaborator.email == form_data.username)
+    )
+    user = result.scalars().first()
     
-    # MOCK implementation for scaffolding
-    if form_data.username != "admin@example.com" or form_data.password != "password":
-         raise HTTPException(status_code=400, detail="Incorrect email or password")
-
-    # Ensure user exists in DB for foreign key constraints and token validation
-    # This fixes the 403 Forbidden error where token is valid but user is missing in DB
-    from app.models.collaborator import Collaborator
-    from sqlalchemy import select
+    # Verify user exists and password is correct
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect email or password"
+        )
     
-    async with SessionLocal() as db:
-        result = await db.execute(select(Collaborator).where(Collaborator.email == form_data.username))
-        user = result.scalars().first()
-        if not user:
-            user = Collaborator(
-                email=form_data.username,
-                name="Admin User",
-                role="ADMIN",
-                active=True
-            )
-            db.add(user)
-            await db.commit()
+    # Check if user has a password set
+    if not user.hashed_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User account not properly configured. Please contact administrator."
+        )
+    
+    # Verify password
+    if not security.verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect email or password"
+        )
+    
+    # Check if user is active
+    if not user.active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Inactive user account"
+        )
 
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {
         "access_token": security.create_access_token(
-            subject=form_data.username, expires_delta=access_token_expires
+            subject=user.email, expires_delta=access_token_expires
         ),
         "token_type": "bearer",
     }

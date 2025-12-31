@@ -1,17 +1,17 @@
-
-version: '3.8'
+version: "3.8"
 
 services:
-  db:
+  db-test:
     image: postgres:15-alpine
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=gestaocases
-    ports:
-      - "5432:5432"
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_DB=gestaocases_test
+    # Use tmpfs for ephemeral test data - no persistence
+    tmpfs:
+      - /var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U test"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -28,19 +28,19 @@ services:
 
   backend-test:
     build: ./backend
-    command: sh -c "pip install 'pytest==8.0.0' httpx 'pytest-asyncio==0.23.5' && python -m pytest"
+    command: sh -c "pip install 'pytest==8.0.0' httpx 'pytest-asyncio==0.23.5' && python -m pytest -v"
     environment:
-      - POSTGRES_SERVER=db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=gestaocases
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/gestaocases
+      - POSTGRES_SERVER=db-test
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_DB=gestaocases_test
+      - SQLALCHEMY_DATABASE_URI=postgresql+asyncpg://test:test@db-test:5432/gestaocases_test
       - REDIS_URL=redis://redis:6379/0
-      - SECRET_KEY=test_secret_key
+      - SECRET_KEY=test_secret_key_for_testing_only_32chars
       - ALGORITHM=HS256
       - ACCESS_TOKEN_EXPIRE_MINUTES=30
     depends_on:
-      db:
+      db-test:
         condition: service_healthy
       redis:
         condition: service_healthy

@@ -11,12 +11,10 @@ from app.main import app
 from app.db.base import Base
 from app.api.deps import get_db
 from app.core.config import settings
+from app.core.security import get_password_hash
 
-# Use an in-memory SQLite database for testing or a separate test DB
-# For simplicity in this scaffold, we'll use the same DB URL but you might want to override it
-# SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./test.db" 
-# For now, let's assume we are running against a test container or local DB. 
-# BE CAREFUL: This uses the configured DB. In a real scenario, use a separate test DB.
+# Tests use a separate database (db-test in docker-compose.test.yml)
+# The database uses tmpfs so all data is ephemeral
 
 @pytest_asyncio.fixture(scope="function")
 async def db() -> AsyncGenerator[AsyncSession, None]:
@@ -26,10 +24,16 @@ async def db() -> AsyncGenerator[AsyncSession, None]:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    # Seed test user
+    # Seed test user with hashed password
     from app.models.collaborator import Collaborator
     async with TestingSessionLocal() as session:
-        user = Collaborator(id=1, email="admin@example.com", name="Admin User", role="ADMIN")
+        user = Collaborator(
+            id=1,
+            email="admin@example.com",
+            name="Admin User",
+            role="ADMIN",
+            hashed_password=get_password_hash("TestPassword123!")
+        )
         session.add(user)
         await session.commit()
 

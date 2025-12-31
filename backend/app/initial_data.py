@@ -6,9 +6,13 @@ from app.db.session import SessionLocal
 from app.models.collaborator import Collaborator
 from app.models.hierarchy import OrganizationalHierarchy, JobLevel
 from app.core.config import settings
+from app.core.security import get_password_hash
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Default password for initial users (MUST be changed in production)
+DEFAULT_PASSWORD = "ChangeMe123!"  # Users should change this on first login
 
 # Sample collaborators data
 INITIAL_COLLABORATORS = [
@@ -45,6 +49,7 @@ async def init_db() -> None:
                     email=collab_data["email"],
                     name=collab_data["name"],
                     role=collab_data["role"],
+                    hashed_password=get_password_hash(DEFAULT_PASSWORD),
                 )
                 session.add(user)
             else:
