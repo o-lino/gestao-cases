@@ -99,14 +99,16 @@ npm run test
 
 ## 📝 Principais Funcionalidades
 
-- ✅ Autenticação JWT com roles (ADMIN, MANAGER, USER)
+- ✅ Autenticação JWT com roles (USER, CURATOR, MODERATOR, ADMIN)
 - ✅ CRUD completo de Cases
-- ✅ Variáveis dinâmicas (JSONB) por case
+- ✅ Variáveis dinâmicas com workflow de aprovação
+- ✅ Matching automático de variáveis via Data Mesh
+- ✅ Sistema de moderação e curadoria
 - ✅ Workflow de estados com validação de transições
 - ✅ Histórico de auditoria completo
 - ✅ Upload de documentos (S3)
-- ✅ Paginação e filtros
-- ✅ Validação de dados em múltiplas camadas
+- ✅ Notificações multi-canal (Email, Teams, Sistema)
+- ✅ Paginação e filtros avançados
 
 ## 🏗️ Arquitetura
 
@@ -123,8 +125,15 @@ backend/
 frontend/
 ├── src/
 │   ├── components/   # Componentes reutilizáveis
+│   │   ├── admin/    # Painel administrativo
+│   │   ├── cases/    # Componentes de cases
+│   │   │   └── tabs/ # Tabs do detalhe (Overview, Docs, etc.)
+│   │   ├── charts/   # Gráficos e dashboards
+│   │   ├── common/   # Componentes genéricos
+│   │   └── moderation/ # Moderação
 │   ├── pages/        # Páginas da aplicação
 │   ├── services/     # API clients
+│   ├── types/        # TypeScript interfaces
 │   └── context/      # Context providers
 ```
 
@@ -139,6 +148,8 @@ frontend/
 
 ## 📚 Documentação Adicional
 
+- [Architecture](./docs/ARCHITECTURE.md) - Diagramas e estrutura do sistema
+- [Contributing](./CONTRIBUTING.md) - Guia de contribuição e padrões
 - [Requirements Specification](./requirements.md) - Especificação completa
 - [API Documentation](http://localhost:8000/docs) - Swagger UI (quando rodando)
 
